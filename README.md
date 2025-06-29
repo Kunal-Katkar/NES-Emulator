@@ -1,3 +1,2 @@
 # NES-Emulator
-Pro
-ject initiated
+Project initiated
