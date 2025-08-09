@@ -6,6 +6,81 @@ A comprehensive Nintendo Entertainment System (NES) emulator implementation in C
 
 The emulator follows a modular architecture that mirrors the actual NES hardware components:
 
+```mermaid
+graph TB
+    subgraph "NES Emulator Architecture"
+        subgraph "Main Components"
+            CPU["olc6502<br/>6502 CPU Emulator<br/>• 56 Instructions<br/>• 256 opcodes<br/>• Registers: A, X, Y, PC, SP<br/>• Status flags"]
+            PPU["olc2C02<br/>Picture Processing Unit<br/>• Pattern tables<br/>• Name tables<br/>• Sprite rendering<br/>• Background rendering"]
+            APU["olc2A03<br/>Audio Processing Unit<br/>• Square waves<br/>• Triangle waves<br/>• Noise channel<br/>• DMC channel"]
+            BUS["Bus<br/>System Bus<br/>• Memory mapping<br/>• Component communication<br/>• 2KB CPU RAM"]
+        end
+        
+        subgraph "Cartridge System"
+            CART["Cartridge<br/>Game ROM<br/>• PRG ROM (Program)<br/>• CHR ROM (Graphics)<br/>• Header parsing<br/>• Mirroring config"]
+            MAPPER["Mapper (Abstract)<br/>Memory Mapping<br/>• Address translation<br/>• Bank switching<br/>• Hardware simulation"]
+            MAP000["Mapper_000<br/>NROM<br/>• Basic mapping<br/>• No bank switching"]
+            MAP001["Mapper_001<br/>MMC1<br/>• 4-bit shift register<br/>• Bank switching"]
+            MAP002["Mapper_002<br/>UxROM<br/>• PRG bank switching"]
+        end
+        
+        subgraph "Graphics System"
+            PGE["olcPixelGameEngine<br/>Rendering Engine<br/>• Screen output<br/>• Sprite management<br/>• Pixel manipulation"]
+            SPRITES["Sprite System<br/>• Pattern tables<br/>• Name tables<br/>• Screen buffer"]
+        end
+        
+        subgraph "Memory Layout"
+            CPURAM["CPU RAM<br/>0x0000-0x07FF<br/>2KB System RAM"]
+            PPUREG["PPU Registers<br/>0x2000-0x2007<br/>PPU Control"]
+            APUREG["APU Registers<br/>0x4000-0x4017<br/>Audio Control"]
+            CARTSPACE["Cartridge Space<br/>0x8000-0xFFFF<br/>PRG ROM"]
+        end
+    end
+    
+    %% Main connections
+    BUS --> CPU
+    BUS --> PPU
+    BUS --> APU
+    BUS --> CART
+    
+    %% Cartridge connections
+    CART --> MAPPER
+    MAPPER --> MAP000
+    MAPPER --> MAP001
+    MAPPER --> MAP002
+    
+    %% Graphics connections
+    PPU --> PGE
+    PPU --> SPRITES
+    
+    %% Memory connections
+    BUS --> CPURAM
+    BUS --> PPUREG
+    BUS --> APUREG
+    BUS --> CARTSPACE
+    
+    %% Data flow
+    CPU -.->|"Read/Write"| BUS
+    PPU -.->|"VRAM Access"| CART
+    CART -.->|"Mapped Addresses"| MAPPER
+    
+    classDef cpu fill:#ff9999
+    classDef ppu fill:#99ff99
+    classDef apu fill:#9999ff
+    classDef bus fill:#ffff99
+    classDef cart fill:#ff99ff
+    classDef mapper fill:#99ffff
+    classDef memory fill:#cccccc
+    
+    class CPU cpu
+    class PPU ppu
+    class APU apu
+    class BUS bus
+    class CART,MAP000,MAP001,MAP002 cart
+    class MAPPER mapper
+    class CPURAM,PPUREG,APUREG,CARTSPACE memory
+```
+
 ### Core Components
 
 #### 🔧 **CPU (olc6502)**
